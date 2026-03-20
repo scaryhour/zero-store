@@ -26,6 +26,33 @@ export default function Home() {
   const [sortBy, setSortBy] = useState<'newest' | 'priceLow' | 'priceHigh'>('newest');
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // --- Check Admin Status (Decoupled) ---
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
+          if (profile?.is_admin) setIsAdmin(true);
+        }
+      } catch (e) {
+        console.error("Admin check background error:", e);
+      }
+    };
+    checkAdmin();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
+        setIsAdmin(!!profile?.is_admin);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   // --- 从云端抓取所有商品数据 ---
   useEffect(() => {
     const fetchData = async () => {
@@ -38,17 +65,6 @@ export default function Home() {
 
         const { data: posterData } = await supabase.from('posters').select('*').eq('is_active', true).order('created_at', { ascending: false });
         if (posterData) setPosters(posterData);
-
-        // Check Admin Status - if it fails, just swallow it, don't block the page
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
-            const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-            if (profile?.is_admin) setIsAdmin(true);
-          }
-        } catch (authError) {
-          console.error("Auth check failed:", authError);
-        }
       } catch (err) {
         console.error("Fetch data failed:", err);
       } finally {
