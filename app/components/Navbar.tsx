@@ -80,29 +80,29 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="absolute left-1/2 -translate-x-1/2">
+        <div className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
           <Link href="/" className="flex flex-col items-center group">
-            <span className="text-3xl font-bold leading-none tracking-tight uppercase transition-transform group-hover:scale-105 duration-500">Zero Store</span>
+            <span className="text-xl md:text-3xl font-bold leading-none tracking-tight uppercase transition-transform group-hover:scale-105 duration-500">Zero Store</span>
             <div className="flex items-center gap-1 mt-1 opacity-40">
-              <span className="text-[7px] font-bold uppercase tracking-widest transition-all group-hover:tracking-widest">Archive Collection</span>
+              <span className="text-[6px] md:text-[7px] font-bold uppercase tracking-widest transition-all group-hover:tracking-widest">Archive Collection</span>
             </div>
           </Link>
         </div>
 
-        <div className="flex items-center gap-6">
-          <button onClick={() => setLanguage(language === 'EN' ? 'CN' : 'EN')} className={`text-[10px] font-black uppercase tracking-widest border-2 px-3 py-1 transition-all ${isScrolled ? 'border-black/10 hover:bg-black hover:text-white' : 'border-black/20 hover:bg-black hover:text-white text-black/60 hover:text-white'}`}>
-            {language === 'EN' ? 'EN' : 'CN'}
+        <div className="flex items-center gap-2 md:gap-6">
+          <button onClick={() => setLanguage(language === 'EN' ? 'CN' : 'EN')} className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest border-2 px-2 md:px-3 py-1 transition-all ${isScrolled ? 'border-black/10 hover:bg-black hover:text-white' : 'border-black/20 hover:bg-black hover:text-white text-black/60 hover:text-white'}`}>
+            {language}
           </button>
 
-          <button className={`text-black/60 hover:text-black transition-all ${isScrolled ? 'opacity-80 hover:opacity-100' : 'opacity-60 hover:opacity-100'}`}>
+          <button className={`hidden md:block text-black/60 hover:text-black transition-all ${isScrolled ? 'opacity-80 hover:opacity-100' : 'opacity-60 hover:opacity-100'}`}>
             <Search size={18} strokeWidth={2} />
           </button>
 
-          <div onClick={() => setIsWishlistOpen(true)} className="relative group cursor-pointer">
+          <div onClick={() => setIsWishlistOpen(true)} className="hidden md:block relative group cursor-pointer">
             <Heart size={18} strokeWidth={2} className={`${isScrolled ? 'text-black/80' : 'text-black/60'} ${wishlist.length > 0 ? 'fill-black/20' : ''}`} />
           </div>
 
-          <Link href={user ? "/profile" : "/login"} className="relative group cursor-pointer flex items-center">
+          <Link href={user ? "/profile" : "/login"} className="hidden md:block relative group cursor-pointer flex items-center">
             <User size={18} strokeWidth={2} className={`transition-transform group-hover:scale-110 ${isScrolled ? 'text-black/80' : 'text-black/60'} ${user ? 'text-blue-500' : ''}`} />
             {!user && <span className="text-[7px] font-black absolute -bottom-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity">LOGIN</span>}
           </Link>
@@ -119,9 +119,9 @@ export default function Navbar() {
 
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="lg:hidden text-black/60 hover:text-black transition-all"
+            className="lg:hidden text-black/60 hover:text-black transition-all p-1"
           >
-            <Menu size={20} strokeWidth={2} />
+            <Menu size={22} strokeWidth={2} />
           </button>
         </div>
       </div>
