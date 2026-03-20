@@ -105,13 +105,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCart((prevCart) => prevCart.filter(item => !(item.id === id && item.selectedSize === size)));
   };
 
-  const updateQuantity = (id: number, quantity: number, size?: string) => {
+  const updateQuantity = (id: number, delta: number, size?: string) => {
     setCart(prevCart => prevCart.map(item => {
       if (item.id === id && item.selectedSize === size) {
         const sizeKey = size || 'OS';
         const availableStock = item.stock_levels?.[sizeKey] ?? 99;
 
-        let newQty = quantity;
+        let newQty = item.quantity + delta;
         if (newQty > availableStock) {
           alert(`STOCK LIMIT REACHED: ONLY ${availableStock} UNITS AVAILABLE`);
           newQty = availableStock;

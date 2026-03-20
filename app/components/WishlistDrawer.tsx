@@ -16,11 +16,11 @@ export default function WishlistDrawer() {
     return (
         <>
             <div
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] transition-opacity"
                 onClick={() => setIsWishlistOpen(false)}
             />
 
-            <div className="fixed top-0 right-0 h-full w-full sm:w-[500px] bg-white text-black z-50 shadow-2xl flex flex-col font-sans transform transition-transform duration-500 ease-[cubic-bezier(0.7,0,0.3,1)]">
+            <div className="fixed top-0 right-0 h-full w-full sm:w-[500px] bg-white text-black z-[110] shadow-2xl flex flex-col font-sans transform transition-transform duration-500 ease-[cubic-bezier(0.7,0,0.3,1)]">
 
                 {/* Header */}
                 <div className="p-8 border-b-4 border-black flex flex-col gap-6 bg-[#f9f9f9]">
