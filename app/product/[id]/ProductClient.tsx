@@ -265,7 +265,7 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
                                 {t('product.reviews_title')}
                             </h2>
                             {reviews.length === 0 ? (
-                                <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30 italic">{t('product.reviews_empty')}</p>
+                                <p className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">{t('product.reviews_empty')}</p>
                             ) : (
                                 <div className="space-y-10">
                                     {reviews.map((rev) => (
@@ -320,7 +320,7 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
                         <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={() => setIsModalOpen(false)} />
                         <div className="relative bg-white w-full max-w-2xl p-10 border-t-8 border-black">
-                            <h2 className="text-4xl font-black italic uppercase tracking-tighter mb-8">{t('product.specs')}</h2>
+                            <h2 className="text-4xl font-black uppercase tracking-tighter mb-8">{t('product.specs')}</h2>
                             <p className="text-xs font-bold leading-relaxed">{product.description}</p>
                             <button onClick={() => setIsModalOpen(false)} className="mt-12 w-full bg-black text-white py-4 text-[10px] font-black uppercase tracking-widest">Close Specs</button>
                         </div>

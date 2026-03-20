@@ -130,7 +130,7 @@ export default function TrackOrderPage() {
                                 <h3 className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30">Archive Manifest</h3>
                                 <div className="space-y-4">
                                     {order.cart_items?.map((item: any, idx: number) => (
-                                        <div key={idx} className="flex justify-between items-center text-xs font-bold italic">
+                                        <div key={idx} className="flex justify-between items-center text-xs font-bold">
                                             <span>{item.name} {item.size ? `[${item.size}]` : ''} x{item.quantity}</span>
                                             <span>{item.price}</span>
                                         </div>

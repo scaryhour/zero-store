@@ -197,7 +197,7 @@ export default function Home() {
         {loading ? (
           <div className="h-96 flex flex-col items-center justify-center gap-4">
             <div className="w-12 h-[2px] bg-black animate-pulse"></div>
-            <p className="text-[9px] uppercase tracking-[0.5em] font-black italic">{t('home.syncing')}</p>
+            <p className="text-[9px] uppercase tracking-[0.5em] font-black">{t('home.syncing')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-10 gap-y-20">
@@ -269,7 +269,7 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs font-black italic">{item.price}</p>
+                    <p className="text-xs font-black">{item.price}</p>
                     <div className="w-8 h-[1px] bg-black/20 ml-auto mt-2 group-hover:bg-black group-hover:w-full transition-all duration-500"></div>
                   </div>
                 </div>
