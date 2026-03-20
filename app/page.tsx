@@ -28,23 +28,32 @@ export default function Home() {
   const { isAdmin } = useAuth();
 
   // --- 从云端抓取所有商品数据 ---
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data: prodData } = await supabase.from('products').select('*').order('id', { ascending: false });
-        if (prodData) setProducts(prodData);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      console.log("Fetching products from Supabase...");
+      const { data: prodData, error } = await supabase.from('products').select('*').order('id', { ascending: false });
 
-        const { data: catData } = await supabase.from('categories').select('name');
-        if (catData) setCategories(['All', ...catData.map(c => c.name)]);
+      if (error) throw error;
 
-        const { data: posterData } = await supabase.from('posters').select('*').eq('is_active', true).order('created_at', { ascending: false });
-        if (posterData) setPosters(posterData);
-      } catch (err) {
-        console.error("Fetch data failed:", err);
-      } finally {
-        setLoading(false);
+      if (prodData) {
+        console.log(`Successfully fetched ${prodData.length} products.`);
+        setProducts(prodData);
       }
-    };
+
+      const { data: catData } = await supabase.from('categories').select('name');
+      if (catData) setCategories(['All', ...catData.map(c => c.name)]);
+
+      const { data: posterData } = await supabase.from('posters').select('*').eq('is_active', true).order('created_at', { ascending: false });
+      if (posterData) setPosters(posterData);
+    } catch (err) {
+      console.error("Fetch data failed:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -196,6 +205,16 @@ export default function Home() {
           <div className="h-96 flex flex-col items-center justify-center gap-4">
             <div className="w-12 h-[2px] bg-black animate-pulse"></div>
             <p className="text-[9px] uppercase tracking-[0.5em] font-black">{t('home.syncing')}</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="h-96 flex flex-col items-center justify-center gap-8 border-2 border-dashed border-black/5">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40">No products detected in this archival node.</p>
+            <button
+              onClick={() => fetchData()}
+              className="bg-black text-white px-8 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
+            >
+              Retry Data Request / Force Sync
+            </button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-10 gap-y-20">

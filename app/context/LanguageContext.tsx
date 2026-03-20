@@ -78,6 +78,7 @@ export const translations: Translations = {
     'home.syncing': { EN: 'Syncing Data...', CN: '正在同步数据节点...' },
     'home.hero_btn': { EN: 'Secure Piece', CN: '立即锁定' },
     'home.inspect': { EN: 'Inspect Data', CN: '查看详情' },
+    'home.items_available': { EN: 'Items Available', CN: '件商品可用' },
     'product.scanning': { EN: 'Scanning Archive...', CN: '正在扫描档案库...' },
     'product.lost': { EN: 'Signal Lost / 404', CN: '信号丢失 / 404' },
     'product.return': { EN: 'Return to Base', CN: '返回基地' },
