@@ -5,7 +5,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
   try {
-    const { sessionId, items, total } = await req.json();
+    const { sessionId, items, total, trackId } = await req.json();
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -65,11 +65,14 @@ export async function POST(req: Request) {
 🛒 *MANIFEST:*
 ${items}
 
+🆔 *TRACK ID:* \`${trackId}\`
+🔗 [TRACE ORDER](https://zero-store-mauve.vercel.app/track?id=${trackId})
+
 💰 *TOTAL:* RM ${total}
 ⏰ *TIME:* ${timestamp}
 ---------------------------------------
 ✅ *STATUS:* PAID & SECURED
-🌐 _v1.4.4_production_ready_
+🌐 _v1.4.5_track_sync_
     `;
 
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {

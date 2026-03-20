@@ -28,14 +28,7 @@ function SuccessContent() {
         }, 0).toFixed(2);
 
         try {
-          // 1. Send Signal Relay (Telegram)
-          await fetch('/api/notify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId, items: itemsList, total: totalPrice }),
-          });
-
-          // 2. Record Order in Supabase
+          // 🟢 1. Record Order FIRST to get the real Track ID
           const appliedCoupon = localStorage.getItem('zero_applied_coupon');
           const recordRes = await fetch('/api/record-order', {
             method: 'POST',
@@ -49,16 +42,32 @@ function SuccessContent() {
           });
 
           localStorage.removeItem('zero_applied_coupon');
+          let finalTrackId = "PENDING";
 
           if (recordRes.ok) {
             const data = await recordRes.json();
-            if (data.trackId) setOrderRef(data.trackId);
+            if (data.trackId) {
+              finalTrackId = data.trackId;
+              setOrderRef(data.trackId);
+            }
           }
+
+          // 🟢 2. Send Signal Relay (Telegram) with the real Track ID
+          await fetch('/api/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId,
+              items: itemsList,
+              total: totalPrice,
+              trackId: finalTrackId
+            }),
+          });
 
           clearCart();
         } catch (err) {
           console.error("Signal Relay Failed:", err);
-          hasNotified.current = false; // 如果彻底失败，可以考虑重试逻辑（可选）
+          hasNotified.current = false;
         }
       };
 
