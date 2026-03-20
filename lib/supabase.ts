@@ -1,29 +1,12 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Avoid creating multiple instances in a browser environment
-// This prevents "Multiple GoTrueClient instances detected" errors
-let supabaseInstance: SupabaseClient | null = null;
-if (typeof window !== 'undefined') {
-    // Check if we already have a client on the global object (for HMR)
-    const globalSupabase = (window as any).__supabase_client;
-    if (globalSupabase) {
-        supabaseInstance = globalSupabase;
-    } else {
-        supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
-        (window as any).__supabase_client = supabaseInstance;
-    }
-} else {
-    // Server-side
-    supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
-}
+// 1. 客户端使用的单例实例 (由 @supabase/ssr 自动管理)
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
 
-export const supabase = supabaseInstance!;
-
-// --- Admin Client (Internal Use Only) ---
-// This client uses the Service Role Key to bypass RLS. 
-// Should ONLY be used in server-side API routes.
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-export const adminSupabase = createClient(supabaseUrl, supabaseServiceKey)
+// 2. Admin Client (保持原样，仅供服务端 API 或 Server Actions 使用)
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!
+export const adminSupabase = createSupabaseClient(supabaseUrl, supabaseServiceKey)
