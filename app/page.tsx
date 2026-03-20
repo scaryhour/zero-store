@@ -7,6 +7,7 @@ import { Search, Filter, X, Zap, Heart } from 'lucide-react';
 import { useCart } from './context/CartContext';
 import { useWishlist } from './context/WishlistContext';
 import { useLanguage } from './context/LanguageContext';
+import { useAuth } from './context/AuthContext';
 
 // 定义商品数据的类型
 interface Product { id: number; name: string; price: string; image: string; description: string; has_sizes: boolean; sizes: string[]; category: string; video_url?: string; stock_levels?: Record<string, number>; }
@@ -24,34 +25,7 @@ export default function Home() {
   const [posters, setPosters] = useState<Poster[]>([]);
   const [activePoster, setActivePoster] = useState(0);
   const [sortBy, setSortBy] = useState<'newest' | 'priceLow' | 'priceHigh'>('newest');
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // --- Check Admin Status (Decoupled) ---
-  useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-          if (profile?.is_admin) setIsAdmin(true);
-        }
-      } catch (e) {
-        console.error("Admin check background error:", e);
-      }
-    };
-    checkAdmin();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session) {
-        const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-        setIsAdmin(!!profile?.is_admin);
-      } else {
-        setIsAdmin(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { isAdmin } = useAuth();
 
   // --- 从云端抓取所有商品数据 ---
   useEffect(() => {

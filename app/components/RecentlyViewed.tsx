@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 interface Product {
@@ -13,8 +14,8 @@ interface Product {
 
 export default function RecentlyViewed() {
     const { currency, exchangeRate } = useCart();
+    const { isAdmin } = useAuth();
     const [items, setItems] = useState<Product[]>([]);
-    const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         const history = localStorage.getItem('zero_view_history');
@@ -25,15 +26,6 @@ export default function RecentlyViewed() {
                 console.error("Failed to parse history", e);
             }
         }
-
-        const checkAdmin = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-                if (profile?.is_admin) setIsAdmin(true);
-            }
-        };
-        checkAdmin();
     }, []);
 
     if (items.length === 0) return null;

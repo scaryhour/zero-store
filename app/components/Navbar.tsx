@@ -5,35 +5,20 @@ import { ShoppingCart, Search, Menu, X, Zap, ChevronDown, Heart, User } from 'lu
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 export default function Navbar() {
   const { setIsCartOpen, cart } = useCart();
   const { wishlist, setIsWishlistOpen } = useWishlist();
   const { language, setLanguage, t } = useLanguage();
+  const { user, isAdmin } = useAuth();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user ?? null);
-      if (session) {
-        const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-        if (profile?.is_admin) setIsAdmin(true);
-        else setIsAdmin(false);
-      } else {
-        setIsAdmin(false);
-      }
-    });
-
     const fetchCats = async () => {
       const { data } = await supabase.from('categories').select('name');
       if (data) setCategories(data.map(c => c.name));
@@ -44,7 +29,6 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      subscription.unsubscribe();
     };
   }, []);
 

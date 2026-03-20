@@ -3,35 +3,16 @@ import React from 'react';
 import Link from 'next/link';
 import { Instagram, Twitter, MessageCircle, Zap, ShieldCheck, Globe, Send } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 export default function Footer() {
     const { t } = useLanguage();
+    const { isAdmin } = useAuth();
     const [email, setEmail] = React.useState('');
     const [status, setStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-    const [isAdmin, setIsAdmin] = React.useState(false);
 
-    React.useEffect(() => {
-        const checkAdmin = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-                if (profile?.is_admin) setIsAdmin(true);
-            }
-        };
-        checkAdmin();
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            if (session) {
-                const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-                setIsAdmin(!!profile?.is_admin);
-            } else {
-                setIsAdmin(false);
-            }
-        });
-
-        return () => subscription.unsubscribe();
-    }, []);
+    // Removed local admin check as it is now in AuthContext
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

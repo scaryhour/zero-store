@@ -6,6 +6,7 @@ import { ShoppingCart, ChevronLeft, ShieldCheck, Globe, Heart, Star, MessageSqua
 import RecentlyViewed from '../../components/RecentlyViewed';
 import { useWishlist } from '../../context/WishlistContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import { supabase } from '@/lib/supabase';
 
 interface Product {
@@ -25,6 +26,7 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
     const { addToCart, currency, exchangeRate } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { t, language } = useLanguage();
+    const { isAdmin } = useAuth();
     const [product] = useState<Product>(initialProduct);
     const [reviews, setReviews] = useState<any[]>(initialReviews);
     const [loading] = useState(false);
@@ -36,7 +38,6 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
     const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, comment: '' });
     const [submittingReview, setSubmittingReview] = useState(false);
     const [reviewSuccess, setReviewSuccess] = useState(false);
-    const [isAdmin, setIsAdmin] = useState(false);
 
     // Track Recently Viewed
     useEffect(() => {
@@ -52,15 +53,6 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
             });
             localStorage.setItem('zero_view_history', JSON.stringify(items.slice(0, 8)));
         }
-
-        const checkAdmin = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-                if (profile?.is_admin) setIsAdmin(true);
-            }
-        };
-        checkAdmin();
     }, [product]);
 
     const handleAddToCart = () => {
