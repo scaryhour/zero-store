@@ -16,6 +16,8 @@ function SuccessContent() {
     setOrderRef(Math.random().toString(36).substr(2, 9).toUpperCase());
 
     if (cart && cart.length > 0 && !hasNotified.current) {
+      hasNotified.current = true; // 🔴 关键：立刻标记为已处理，防止并发请求
+
       const sendOrderNotification = async () => {
         const itemsList = cart.map((item: any) => `• ${item.name}${item.selectedSize ? ` (Size: ${item.selectedSize})` : ''} (x${item.quantity})`).join('\n');
         const totalPrice = cart.reduce((acc: number, item: any) => {
@@ -53,10 +55,10 @@ function SuccessContent() {
             if (data.trackId) setOrderRef(data.trackId);
           }
 
-          hasNotified.current = true;
           clearCart();
         } catch (err) {
           console.error("Signal Relay Failed:", err);
+          hasNotified.current = false; // 如果彻底失败，可以考虑重试逻辑（可选）
         }
       };
 
