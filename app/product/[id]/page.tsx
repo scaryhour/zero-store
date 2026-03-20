@@ -50,8 +50,8 @@ export default async function ProductPage({ params }: Props) {
   if (!product) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-12">
-        <h1 className="text-4xl font-black italic uppercase tracking-tighter mb-4">ARCHIVE NODE LOST</h1>
-        <a href="/" className="text-[10px] font-black border border-black px-8 py-3 uppercase tracking-widest">Return to System</a>
+        <h1 className="text-4xl font-black uppercase tracking-tighter mb-4 text-black">ARCHIVE NODE LOST</h1>
+        <a href="/" className="text-[11px] font-black border-2 border-black px-8 py-3 uppercase tracking-widest hover:bg-black hover:text-white transition-all">Return to System</a>
       </div>
     );
   }

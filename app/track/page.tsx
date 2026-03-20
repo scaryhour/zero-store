@@ -61,8 +61,8 @@ export default function TrackOrderPage() {
 
             <div className="pt-40 px-6 md:px-12 max-w-4xl mx-auto">
                 <div className="text-center mb-16">
-                    <h1 className="text-6xl font-black italic uppercase tracking-tighter mb-4">{t('track.title')}</h1>
-                    <p className="text-[10px] uppercase tracking-[0.4em] opacity-40 font-bold">{t('track.subtitle')}</p>
+                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 text-black">{t('track.title')}</h1>
+                    <p className="text-[11px] uppercase tracking-widest text-black/40 font-bold">{t('track.subtitle')}</p>
                 </div>
 
                 {/* Search Box */}
@@ -78,12 +78,12 @@ export default function TrackOrderPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:text-blue-600 transition-colors"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:text-blue-600 transition-colors text-black"
                         >
                             <Search size={20} className={loading ? 'animate-pulse' : ''} />
                         </button>
                     </div>
-                    <p className="mt-4 text-[8px] font-black uppercase tracking-widest opacity-20 text-center uppercase leading-none">
+                    <p className="mt-4 text-[9px] font-bold uppercase tracking-widest text-black/20 text-center leading-none">
                         * Refer to your confirmation telegram or technical report for the ID.
                     </p>
                 </form>
@@ -111,9 +111,9 @@ export default function TrackOrderPage() {
                                         <div key={idx} className={`flex flex-col items-center gap-4 ${isActive ? 'opacity-100' : 'opacity-10'}`}>
                                             <step.icon size={32} strokeWidth={isActive ? 2.5 : 1} />
                                             <div className="flex flex-col items-center">
-                                                <span className="text-[9px] font-black uppercase tracking-widest text-center">{step.label}</span>
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-center">{step.label}</span>
                                                 {isActive && order[step.timeKey] && (
-                                                    <span className="text-[7px] font-bold opacity-40 mt-1 uppercase tracking-tighter">
+                                                    <span className="text-[9px] font-bold text-black opacity-40 mt-1 uppercase tracking-tighter">
                                                         {new Date(order[step.timeKey]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                                                     </span>
                                                 )}

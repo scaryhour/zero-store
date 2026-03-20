@@ -109,7 +109,16 @@ export const translations: Translations = {
     'track.status_payment': { EN: 'Payment Pending', CN: '支付待定' },
     'track.status_processing': { EN: 'Processing', CN: '处理中' },
     'track.status_shipped': { EN: 'Shipped', CN: '已出库' },
-    'track.status_delivered': { EN: 'Delivered', CN: '已送达' }
+    'track.status_delivered': { EN: 'Delivered', CN: '已送达' },
+
+    // New JD Style Footer
+    'footer.newsletter_title': { EN: 'Be the first to know', CN: '第一时间获取动态' },
+    'footer.newsletter_subtitle': { EN: 'Sign up for the latest Zero Store news, products and offers', CN: '订阅以获取 Zero Store 的最新资讯、产品和优惠' },
+    'footer.shopping_title': { EN: 'Shopping with Zero', CN: '在 Zero 购物' },
+    'footer.country_label': { EN: 'Country / Region', CN: '国家 / 地区' },
+    'footer.payment_label': { EN: 'Payment methods', CN: '支付方式' },
+    'footer.follow_us': { EN: 'Follow Us', CN: '关注我们' },
+    'footer.all_collections': { EN: 'All Collections', CN: '所有系列' }
 };
 
 interface LanguageContextType {

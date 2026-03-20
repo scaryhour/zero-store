@@ -24,6 +24,7 @@ export default function Home() {
   const [posters, setPosters] = useState<Poster[]>([]);
   const [activePoster, setActivePoster] = useState(0);
   const [sortBy, setSortBy] = useState<'newest' | 'priceLow' | 'priceHigh'>('newest');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // --- 从云端抓取所有商品数据 ---
   useEffect(() => {
@@ -36,6 +37,13 @@ export default function Home() {
 
       const { data: posterData } = await supabase.from('posters').select('*').eq('is_active', true).order('created_at', { ascending: false });
       if (posterData) setPosters(posterData);
+
+      // Check Admin Status
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
+        if (profile?.is_admin) setIsAdmin(true);
+      }
 
       setLoading(false);
     };
@@ -70,31 +78,31 @@ export default function Home() {
           </div>
 
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-500/50 shadow-[0_0_15px_blue] animate-[scan_4s_linear_infinite]" />
+            {isAdmin && <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-500/50 shadow-[0_0_15px_blue] animate-[scan_4s_linear_infinite]" />}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
+            {isAdmin && <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />}
           </div>
 
           <div className="absolute inset-0 flex flex-col justify-center px-12 md:px-24">
             <div className="max-w-4xl space-y-6">
               <div className="flex flex-col mb-12 animate-fadeInUp">
-                <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-tight mb-2">
+                <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-tight mb-2 text-white">
                   {selectedCategory === 'All' ? t('home.all_collections') : selectedCategory.toUpperCase()}
                 </h2>
-                <p className="text-[10px] font-bold uppercase tracking-widest opacity-30 italic">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
                   {selectedCategory === 'All' ? 'Curated Anthology' : `Selective ${selectedCategory} Series`} / 2026
                 </p>
               </div>
-              <h1 className="text-7xl md:text-9xl font-black italic uppercase tracking-tighter leading-none text-white drop-shadow-2xl">
+              <h1 className="text-7xl md:text-9xl font-black uppercase tracking-tighter leading-none text-white drop-shadow-2xl">
                 {posters[activePoster].title}
               </h1>
-              <p className="text-lg md:text-xl font-bold text-white/80 max-w-xl uppercase tracking-widest italic border-l-4 border-white pl-6">
+              <p className="text-lg md:text-xl font-bold text-white max-w-xl uppercase tracking-widest border-l-4 border-white pl-6">
                 {posters[activePoster].subtitle}
               </p>
               <div className="pt-10 flex gap-6">
                 <a
                   href={posters[activePoster].link_url || '#'}
-                  className="bg-white text-black px-12 py-6 text-[12px] font-black uppercase tracking-[0.4em] hover:bg-blue-600 hover:text-white transition-all duration-500 flex items-center gap-4 group/btn"
+                  className="bg-white text-black px-12 py-6 text-[12px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all duration-500 flex items-center gap-4 group/btn shadow-xl"
                 >
                   {t('home.btn_init')} <Zap size={16} className="fill-current group-hover/btn:scale-125 transition-transform" />
                 </a>
@@ -120,9 +128,9 @@ export default function Home() {
         {/* Filter & Sort Header */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-16 border-b border-black pb-8 gap-12">
           <div>
-            <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-tight leading-tight mb-4">{t('home.archive_title')}</h1>
-            <p className="text-[10px] uppercase tracking-[0.6em] opacity-40 mt-4 font-bold">
-              {loading ? t('home.inventory_scanning') : `${t('home.inventory_active')} / ${filteredProducts.length} Units Detected`}
+            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-tight mb-4 text-black">{t('home.archive_title')}</h1>
+            <p className="text-[11px] uppercase tracking-widest text-black/40 mt-4 font-bold">
+              {loading ? (isAdmin ? t('home.inventory_scanning') : '...') : (isAdmin ? `${t('home.inventory_active')} / ${filteredProducts.length} Units Detected` : `${filteredProducts.length} ${t('home.items_available') || 'Items'}`)}
             </p>
           </div>
 
@@ -135,7 +143,7 @@ export default function Home() {
                 placeholder={t('home.probe_placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-b border-black/10 py-6 pl-10 text-xl font-black uppercase tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-black/5"
+                className="w-full bg-transparent border-b-2 border-black/10 py-6 pl-10 text-xl font-black uppercase tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-black/10 text-black"
               />
               {searchQuery && (
                 <button onClick={() => setSearchQuery('')} className="absolute right-0 top-1/2 -translate-y-1/2 p-2"><X size={16} /></button>
@@ -145,16 +153,16 @@ export default function Home() {
             <div className="flex flex-col md:flex-row justify-between gap-8">
               {/* Category Filter */}
               <div className="flex flex-wrap gap-3">
-                <div className="flex items-center self-center mr-4 opacity-30">
+                <div className="flex items-center self-center mr-4 text-black/40">
                   <Filter size={12} strokeWidth={3} />
-                  <span className="text-[9px] font-black uppercase ml-2 tracking-widest">Filter:</span>
+                  <span className="text-[10px] font-bold uppercase ml-2 tracking-widest">Filter:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {categories.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all border ${selectedCategory === cat ? 'bg-black text-white border-black' : 'bg-transparent text-black/40 border-black/10 hover:border-black hover:text-black'}`}
+                      className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all border-2 ${selectedCategory === cat ? 'bg-black text-white border-black' : 'bg-transparent text-black/40 border-black/10 hover:border-black hover:text-black'}`}
                     >
                       {cat}
                     </button>
@@ -174,7 +182,7 @@ export default function Home() {
                     <button
                       key={opt.id}
                       onClick={() => setSortBy(opt.id as any)}
-                      className={`text-[9px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${sortBy === opt.id ? 'text-black border-b-2 border-black' : 'text-black/30 hover:text-black'}`}
+                      className={`text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${sortBy === opt.id ? 'text-black border-b-2 border-black' : 'text-black/40 hover:text-black'}`}
                     >
                       {opt.label}
                     </button>
@@ -201,9 +209,11 @@ export default function Home() {
                 className="group cursor-crosshair block opacity-0 animate-fadeInUp"
               >
                 <div className="relative aspect-[3/4] bg-[#f4f4f4] mb-6 overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-black text-white text-[9px] font-black px-3 py-1.5 z-10 tracking-widest uppercase">
-                    NO. {item.id.toString().padStart(4, '0')}
-                  </div>
+                  {isAdmin && (
+                    <div className="absolute top-0 right-0 bg-black text-white text-[9px] font-black px-3 py-1.5 z-10 tracking-widest uppercase">
+                      NO. {item.id.toString().padStart(4, '0')}
+                    </div>
+                  )}
                   <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out" />
 
                   {/* Hover Overlay */}
@@ -228,10 +238,10 @@ export default function Home() {
 
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest mb-1 group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-sm font-black uppercase tracking-tight mb-1 group-hover:text-blue-600 transition-colors text-black">
                       {item.name}
                     </h3>
-                    <p className="text-xs font-medium opacity-50 mb-3">
+                    <p className="text-[11px] font-bold text-black/40 mb-3">
                       {currency} {(parseFloat(item.price.toString().replace(/[^0-9.]/g, '')) * (currency === 'USD' ? exchangeRate : 1)).toFixed(2)}
                     </p>
                     <div className="flex gap-1 mt-3">
@@ -240,7 +250,7 @@ export default function Home() {
                           const stock = item.stock_levels?.[sz] ?? 0;
                           return (
                             <div key={sz} className="flex flex-col items-center gap-1 group/sz">
-                              <div className={`w-6 h-6 flex items-center justify-center border border-black/10 text-[9px] font-black uppercase ${stock > 0 ? 'text-black group-hover:bg-black group-hover:text-white' : 'text-red-500 line-through opacity-30'} transition-colors relative`}>
+                              <div className={`w-7 h-7 flex items-center justify-center border-2 border-black/10 text-[10px] font-black uppercase ${stock > 0 ? 'text-black group-hover:bg-black group-hover:text-white' : 'text-red-500 line-through opacity-30'} transition-colors relative`}>
                                 {sz}
                               </div>
                               <span className={`text-[8px] font-black uppercase tracking-tighter ${stock > 0 ? (stock < 3 ? 'text-red-500 animate-pulse' : 'text-emerald-600') : 'text-red-500 opacity-100'}`}>

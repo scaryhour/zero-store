@@ -15,6 +15,7 @@ export default function Navbar() {
   const [categories, setCategories] = useState<string[]>([]);
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -22,8 +23,15 @@ export default function Navbar() {
       setUser(session?.user ?? null);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
+      if (session) {
+        const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
+        if (profile?.is_admin) setIsAdmin(true);
+        else setIsAdmin(false);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     const fetchCats = async () => {
@@ -54,14 +62,14 @@ export default function Navbar() {
         <div className="hidden lg:flex gap-10 items-center">
           {menuItems.map((item) => (
             <div key={item.name} onMouseEnter={() => setActiveMenu(item.name)} onMouseLeave={() => setActiveMenu(null)} className="relative group">
-              <button className={`text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 ${activeMenu === item.name ? 'text-blue-600' : isScrolled ? 'text-black opacity-60 hover:opacity-100' : 'text-black opacity-40 hover:opacity-100'}`}>
+              <button className={`text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-2 ${activeMenu === item.name ? 'text-blue-600' : 'text-black opacity-100 hover:text-blue-600'}`}>
                 {item.name}
                 <ChevronDown size={10} className={`transition-transform duration-300 ${activeMenu === item.name ? 'rotate-180' : ''}`} />
               </button>
               <div className={`fixed top-[100%] left-0 right-0 bg-white border-b-8 border-black shadow-2xl transition-all duration-500 overflow-hidden ${activeMenu === item.name ? 'max-h-[500px] opacity-100 py-16' : 'max-h-0 opacity-0'}`} style={{ top: isScrolled ? '73px' : '105px' }}>
                 <div className="max-w-6xl mx-auto px-12 grid grid-cols-4 gap-12">
                   <div className="col-span-1 border-l-2 border-black pl-8">
-                    <h4 className="text-[9px] font-black uppercase tracking-widest opacity-30 mb-6 font-bold">Catalogue Protocol</h4>
+                    {isAdmin && <h4 className="text-[10px] font-bold uppercase tracking-widest text-black/40 mb-6">Catalogue Protocol</h4>}
                     <ul className="space-y-4">
                       {item.subItems.map(sub => (
                         <li key={sub}><a href={`/?search=${sub.toLowerCase()}`} className="text-xl font-bold uppercase tracking-tight hover:text-blue-600 transition-all block group/item">{sub}</a></li>
@@ -69,10 +77,10 @@ export default function Navbar() {
                     </ul>
                   </div>
                   <div className="col-span-2 bg-zinc-50 p-6 border border-black/5 flex items-center justify-center">
-                    <p className="text-[10px] font-black uppercase tracking-[0.5em] opacity-10 italic">Zero-System Archive Access</p>
+                    {isAdmin && <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-black opacity-20">Zero-System Archive Access</p>}
                   </div>
                   <div className="col-span-1 text-right">
-                    <p className="text-[10px] font-black uppercase italic opacity-20">System / Node_042</p>
+                    {isAdmin && <p className="text-[10px] font-bold uppercase text-black opacity-20">System / Node_042</p>}
                   </div>
                 </div>
               </div>
@@ -82,9 +90,9 @@ export default function Navbar() {
 
         <div className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
           <Link href="/" className="flex flex-col items-center group">
-            <span className="text-xl md:text-3xl font-bold leading-none tracking-tight uppercase transition-transform group-hover:scale-105 duration-500">Zero Store</span>
-            <div className="flex items-center gap-1 mt-1 opacity-40">
-              <span className="text-[6px] md:text-[7px] font-bold uppercase tracking-widest transition-all group-hover:tracking-widest">Archive Collection</span>
+            <span className="text-2xl md:text-4xl font-black leading-none tracking-tighter uppercase transition-transform group-hover:scale-105 duration-500 text-black">Zero Store</span>
+            <div className="flex items-center gap-1 mt-1">
+              <span className="text-[7px] md:text-[8px] font-bold uppercase tracking-widest text-black opacity-40">Archive Collection</span>
             </div>
           </Link>
         </div>
@@ -130,7 +138,7 @@ export default function Navbar() {
       <div className={`fixed inset-0 bg-white z-[200] lg:hidden transition-all duration-700 ${isMobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'}`}>
         <div className="p-8 flex flex-col h-full">
           <div className="flex justify-between items-center mb-16">
-            <span className="text-xl font-black italic uppercase italic tracking-tighter">Menu</span>
+            <span className="text-2xl font-black uppercase tracking-tighter text-black">Menu</span>
             <button onClick={() => setIsMobileMenuOpen(false)} className="p-4 bg-black text-white rounded-full">
               <X size={24} />
             </button>
@@ -139,14 +147,14 @@ export default function Navbar() {
           <nav className="flex-1 space-y-10 overflow-y-auto no-scrollbar">
             {menuItems.map((item) => (
               <div key={item.name} className="space-y-4">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] opacity-30">{item.name}</h4>
+                <h4 className="text-[11px] font-bold uppercase tracking-widest text-black/40">{item.name}</h4>
                 <div className="grid grid-cols-1 gap-4">
                   {item.subItems.map(sub => (
                     <a
                       key={sub}
                       href={`/?search=${sub.toLowerCase()}`}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="text-4xl font-black italic uppercase tracking-tighter hover:text-blue-600 transition-colors"
+                      className="text-4xl font-black uppercase tracking-tighter text-black hover:text-blue-600 transition-colors"
                     >
                       {sub}
                     </a>

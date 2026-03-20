@@ -6,6 +6,7 @@ import { ShoppingCart, ChevronLeft, ShieldCheck, Globe, Heart, Star, MessageSqua
 import RecentlyViewed from '../../components/RecentlyViewed';
 import { useWishlist } from '../../context/WishlistContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { supabase } from '@/lib/supabase';
 
 interface Product {
     id: number;
@@ -35,6 +36,7 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
     const [reviewForm, setReviewForm] = useState({ name: '', rating: 5, comment: '' });
     const [submittingReview, setSubmittingReview] = useState(false);
     const [reviewSuccess, setReviewSuccess] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     // Track Recently Viewed
     useEffect(() => {
@@ -50,6 +52,15 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
             });
             localStorage.setItem('zero_view_history', JSON.stringify(items.slice(0, 8)));
         }
+
+        const checkAdmin = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
+                if (profile?.is_admin) setIsAdmin(true);
+            }
+        };
+        checkAdmin();
     }, [product]);
 
     const handleAddToCart = () => {
@@ -120,11 +131,13 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
                                     />
                                 )}
                             </div>
-                            <div className="absolute top-4 left-4 z-10">
-                                <span className="bg-black text-white text-[8px] font-black px-2 py-1 uppercase tracking-widest">
-                                    {language === 'EN' ? 'Batch: 2026.03' : '批次：2026.03'}
-                                </span>
-                            </div>
+                            {isAdmin && (
+                                <div className="absolute top-4 left-4 z-10">
+                                    <span className="bg-black text-white text-[8px] font-black px-2 py-1 uppercase tracking-widest">
+                                        {language === 'EN' ? 'Batch: 2026.03' : '批次：2026.03'}
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-4">
@@ -154,19 +167,21 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
                     <div className="flex flex-col space-y-12">
                         <header className="border-b-4 border-black pb-8">
                             <div className="flex justify-between items-center mb-4">
-                                <button
-                                    onClick={() => setIsModalOpen(true)}
-                                    className="text-[10px] font-black uppercase tracking-[0.4em] opacity-30 hover:opacity-100 hover:text-blue-600 transition-all text-left"
-                                >
-                                    Archive NO. {product.id.toString().padStart(4, '0')} [SPEC]
-                                </button>
-                                <span className="flex items-center gap-2 text-[9px] font-bold uppercase text-emerald-600">
+                                {isAdmin && (
+                                    <button
+                                        onClick={() => setIsModalOpen(true)}
+                                        className="text-[10px] font-black uppercase tracking-widest text-black/40 hover:text-black transition-all text-left"
+                                    >
+                                        Archive NO. {product.id.toString().padStart(4, '0')} [SPEC]
+                                    </button>
+                                )}
+                                <span className="flex items-center gap-2 text-[10px] font-bold uppercase text-emerald-600 ml-auto">
                                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                                     {t('product.active')}
                                 </span>
                             </div>
-                            <h1 className="text-4xl md:text-6xl font-bold uppercase tracking-tight leading-tight mb-4">{product.name}</h1>
-                            <p className="text-3xl font-bold tracking-tight">
+                            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-tight mb-4 text-black">{product.name}</h1>
+                            <p className="text-3xl font-black tracking-tighter text-black">
                                 {currency} {(parseFloat(product.price.toString().replace(/[^0-9.]/g, '')) * (currency === 'USD' ? exchangeRate : 1)).toFixed(2)}
                             </p>
                         </header>
@@ -236,7 +251,7 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
                         </div>
 
                         <div className="pt-24 opacity-5 select-none pointer-events-none">
-                            <p className="text-[6vw] font-black italic leading-none tracking-tighter">ZERO-SYSTEM</p>
+                            <p className="text-[6vw] font-black leading-none tracking-tighter">ZERO-SYSTEM</p>
                         </div>
                     </div>
                 </div>
@@ -245,7 +260,7 @@ export default function ProductClient({ initialProduct, initialReviews }: { init
                 <section className="mt-32 pt-24 border-t-2 border-black/5 animate-fadeInUp">
                     <div className="flex flex-col md:flex-row justify-between items-start gap-12">
                         <div className="flex-1 space-y-12">
-                            <h2 className="text-4xl font-black italic uppercase tracking-tighter flex items-center gap-4">
+                            <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-4 text-black text-black">
                                 <MessageSquare size={24} />
                                 {t('product.reviews_title')}
                             </h2>
