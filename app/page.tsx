@@ -135,7 +135,7 @@ export default function Home() {
         {/* Filter & Sort Header */}
         <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-16 border-b border-black pb-8 gap-12">
           <div>
-            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-tight mb-4 text-black">ZERO {t('home.archive_title')}</h1>
+            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-tight mb-4 text-black">{t('home.archive_title')}</h1>
             <p className="text-[11px] uppercase tracking-widest text-black/40 mt-4 font-bold">
               {loading ? (isAdmin ? t('home.inventory_scanning') : '...') : (isAdmin ? `${t('home.inventory_active')} / ${filteredProducts.length} Units Detected` : `${filteredProducts.length} ${t('home.items_available') || 'Items'}`)}
             </p>
