@@ -29,23 +29,31 @@ export default function Home() {
   // --- 从云端抓取所有商品数据 ---
   useEffect(() => {
     const fetchData = async () => {
-      const { data: prodData } = await supabase.from('products').select('*').order('id', { ascending: false });
-      if (prodData) setProducts(prodData);
+      try {
+        const { data: prodData } = await supabase.from('products').select('*').order('id', { ascending: false });
+        if (prodData) setProducts(prodData);
 
-      const { data: catData } = await supabase.from('categories').select('name');
-      if (catData) setCategories(['All', ...catData.map(c => c.name)]);
+        const { data: catData } = await supabase.from('categories').select('name');
+        if (catData) setCategories(['All', ...catData.map(c => c.name)]);
 
-      const { data: posterData } = await supabase.from('posters').select('*').eq('is_active', true).order('created_at', { ascending: false });
-      if (posterData) setPosters(posterData);
+        const { data: posterData } = await supabase.from('posters').select('*').eq('is_active', true).order('created_at', { ascending: false });
+        if (posterData) setPosters(posterData);
 
-      // Check Admin Status
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
-        if (profile?.is_admin) setIsAdmin(true);
+        // Check Admin Status - if it fails, just swallow it, don't block the page
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
+            if (profile?.is_admin) setIsAdmin(true);
+          }
+        } catch (authError) {
+          console.error("Auth check failed:", authError);
+        }
+      } catch (err) {
+        console.error("Fetch data failed:", err);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
     fetchData();
   }, []);
