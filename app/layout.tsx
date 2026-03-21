@@ -7,7 +7,6 @@ import CartDrawer from "./components/CartDrawer";
 import WishlistDrawer from "./components/WishlistDrawer";
 import Footer from "./components/Footer";
 import SupportBubble from "./components/SupportBubble";
-import { AuthProvider } from "./context/AuthContext";
 
 import type { Metadata } from "next";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -34,19 +33,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${inter.variable} ${spaceGrotesk.variable} antialiased font-sans`}>
-        <AuthProvider>
-          <CartProvider>
-            <LanguageProvider>
-              <WishlistProvider>
-                {children}
-                <CartDrawer />
-                <WishlistDrawer />
-                <Footer />
-                <SupportBubble />
-              </WishlistProvider>
-            </LanguageProvider>
-          </CartProvider>
-        </AuthProvider>
+        <CartProvider>
+          <LanguageProvider>
+            <WishlistProvider>
+              {children}
+              {/* 这里是关键：它会根据 Context 里的 isCartOpen 信号决定是否滑出来 */}
+              <CartDrawer />
+              <WishlistDrawer />
+              <Footer />
+              <SupportBubble />
+            </WishlistProvider>
+          </LanguageProvider>
+        </CartProvider>
       </body>
     </html>
   );
