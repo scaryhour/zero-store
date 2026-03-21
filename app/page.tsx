@@ -39,11 +39,13 @@ export default function Home() {
       if (posterData) setPosters(posterData);
 
       // Check Admin Status
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error: authError } = await supabase.auth.getSession();
+      const session = data?.session;
       if (session) {
         const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
         if (profile?.is_admin) setIsAdmin(true);
       }
+
 
       setLoading(false);
     };

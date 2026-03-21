@@ -22,7 +22,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const initAuth = async () => {
             try {
-                const { data: { session } } = await supabase.auth.getSession();
+                const { data, error } = await supabase.auth.getSession();
+                if (error) {
+                    console.warn("Supabase Auth session error:", error.message);
+                    // Clear broken session
+                    await supabase.auth.signOut().catch(() => { });
+                }
+                const session = data?.session;
+
                 if (session) {
                     setUser(session.user);
                     const { data: profile } = await supabase.from('profiles').select('is_admin').eq('id', session.user.id).single();
@@ -30,6 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 }
             } catch (error) {
                 console.error("Auth initialization failed:", error);
+
             } finally {
                 setLoading(false);
             }
