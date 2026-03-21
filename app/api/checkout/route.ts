@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     // --- Production Shield: Stock Pre-check ---
     if (cartItems && cartItems.length > 0) {
-      const { adminSupabase } = await import('@/lib/supabase-admin-admin');
+      const { adminSupabase } = await import('@/lib/supabase');
       for (const item of cartItems) {
         const { data: product } = await adminSupabase
           .from('products')

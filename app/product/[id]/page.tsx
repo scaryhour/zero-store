@@ -1,5 +1,5 @@
 import React from 'react';
-import { adminSupabase } from '@/lib/supabase-admin-admin-admin-admin';
+import { adminSupabase } from '@/lib/supabase';
 import ProductClient from './ProductClient';
 import { Metadata } from 'next';
 

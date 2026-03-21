@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { adminSupabase } from '@/lib/supabase-admin-admin-admin-admin-admin-admin-admin-admin';
+import { adminSupabase } from '@/lib/supabase';
 import Stripe from 'stripe';
 import { Resend } from 'resend';
 
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
         // 5. Increment Coupon Usage Count
         if (couponCode) {
             try {
-                const { adminSupabase } = await import('@/lib/supabase-admin-admin-admin-admin-admin-admin-admin-admin');
+                const { adminSupabase } = await import('@/lib/supabase');
                 const { data: couponData } = await adminSupabase
                     .from('coupons')
                     .select('used_count')
@@ -152,7 +152,7 @@ export async function POST(req: Request) {
 
         // 4. Update stock levels for each item (Production-Grade Sync)
         try {
-            const { adminSupabase } = await import('@/lib/supabase-admin-admin-admin-admin-admin-admin-admin-admin');
+            const { adminSupabase } = await import('@/lib/supabase');
             for (const item of items) {
                 const { data: product } = await adminSupabase
                     .from('products')
