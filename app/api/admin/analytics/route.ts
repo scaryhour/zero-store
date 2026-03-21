@@ -11,7 +11,7 @@ export async function GET() {
         if (orderError) throw orderError;
 
         // 2. Calculate Total Revenue (GMV)
-        const totalRevenue = orders.reduce((acc, order) => {
+        const totalRevenue = orders.reduce((acc: any, order: any) => {
             const price = typeof order.amount_total === 'string'
                 ? parseFloat(order.amount_total.replace(/[^0-9.]/g, ''))
                 : order.amount_total;
