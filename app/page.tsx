@@ -163,8 +163,10 @@ export default function Home() {
               <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400">Current Catalogue</span>
             </div>
             <h1 className="text-6xl md:text-9xl font-black uppercase tracking-tighter leading-none text-black">
-              {t('home.archive_title').split(' ')[0]} <br />
-              <span className="text-zinc-200 group-hover:text-black transition-colors duration-1000">{t('home.archive_title').split(' ')[1] || 'ARCHIVE'}</span>
+              {(t('home.archive_title') || 'THE ARCHIVE').split(' ')[0]} <br />
+              <span className="text-zinc-200 group-hover:text-black transition-colors duration-1000">
+                {(t('home.archive_title') || 'THE ARCHIVE').split(' ')[1] || 'ARCHIVE'}
+              </span>
             </h1>
           </div>
 
