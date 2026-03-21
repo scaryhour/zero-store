@@ -3,11 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import Navbar from './components/Navbar';
 import Link from 'next/link';
-import { Search, Filter, X, Zap, Heart } from 'lucide-react';
+import { Search, Filter, X, Zap, Heart, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { useCart } from './context/CartContext';
 import { useWishlist } from './context/WishlistContext';
 import { useLanguage } from './context/LanguageContext';
 import { useAuth } from './context/AuthContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 // 定义商品数据的类型
 interface Product { id: number; name: string; price: string; image: string; description: string; has_sizes: boolean; sizes: string[]; category: string; video_url?: string; stock_levels?: Record<string, number>; }
@@ -31,15 +33,9 @@ export default function Home() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      console.log("Fetching products from Supabase...");
       const { data: prodData, error } = await supabase.from('products').select('*').order('id', { ascending: false });
-
       if (error) throw error;
-
-      if (prodData) {
-        console.log(`Successfully fetched ${prodData.length} products.`);
-        setProducts(prodData);
-      }
+      if (prodData) setProducts(prodData);
 
       const { data: catData } = await supabase.from('categories').select('name');
       if (catData) setCategories(['All', ...catData.map(c => c.name)]);
@@ -59,139 +55,174 @@ export default function Home() {
 
   const filteredProducts = products.filter(item => {
     const matchesCategory = selectedCategory === 'All' || (item.category?.toUpperCase() === selectedCategory.toUpperCase());
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.id.toString().includes(searchQuery);
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.id.toString().includes(searchQuery);
     return matchesCategory && matchesSearch;
   }).sort((a, b) => {
     const priceA = parseFloat(a.price.replace(/[^0-9.]/g, '')) || 0;
     const priceB = parseFloat(b.price.replace(/[^0-9.]/g, '')) || 0;
     if (sortBy === 'priceLow') return priceA - priceB;
     if (sortBy === 'priceHigh') return priceB - priceA;
-    return b.id - a.id; // Default newest
+    return b.id - a.id;
   });
 
   return (
-    <main className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white pt-24">
+    <main className="min-h-screen bg-white text-black font-sans selection:bg-emerald-500 selection:text-white pt-24 overflow-x-hidden">
       <Navbar />
 
       {/* Dynamic Hero Section - The "Visual Override" */}
       {posters.length > 0 && (
-        <section className="relative h-[85vh] overflow-hidden border-b-8 border-black group">
-          <div className="absolute inset-0 transition-transform duration-[2s] scale-105 group-hover:scale-100">
+        <section className="relative h-[85vh] overflow-hidden border-b-[12px] border-black group">
+          <motion.div
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 2 }}
+            className="absolute inset-0"
+          >
             <img
               src={posters[activePoster].image_url}
-              className="w-full h-full object-cover grayscale-0 brightness-100 transition-all duration-[2s]"
+              className="w-full h-full object-cover brightness-75 group-hover:brightness-90 transition-all duration-1000"
             />
-          </div>
+          </motion.div>
 
+          {/* High-Tech Overlay Elements */}
           <div className="absolute inset-0 pointer-events-none">
-            {isAdmin && <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-500/50 shadow-[0_0_15px_blue] animate-[scan_4s_linear_infinite]" />}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
-            {isAdmin && <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />}
+            <motion.div
+              initial={{ top: '-10%' }}
+              animate={{ top: '110%' }}
+              transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+              className="absolute left-0 right-0 h-[1px] bg-white/20 z-10"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
           </div>
 
-          <div className="absolute inset-0 flex flex-col justify-center px-12 md:px-24">
-            <div className="max-w-4xl space-y-6">
-              <div className="flex flex-col mb-12 animate-fadeInUp">
-                <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-tight mb-2 text-white">
-                  {selectedCategory === 'All' ? t('home.all_collections') : selectedCategory.toUpperCase()}
-                </h2>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">
-                  {selectedCategory === 'All' ? 'Curated Anthology' : `Selective ${selectedCategory} Series`} / 2026
-                </p>
-              </div>
-              <h1 className="text-7xl md:text-9xl font-black uppercase tracking-tighter leading-none text-white drop-shadow-2xl">
-                {posters[activePoster].title}
-              </h1>
-              <p className="text-lg md:text-xl font-bold text-white max-w-xl uppercase tracking-widest border-l-4 border-white pl-6">
+          <div className="absolute inset-0 flex flex-col justify-center px-12 md:px-32">
+            <div className="max-w-4xl space-y-8">
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-4"
+              >
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+                  <Zap size={10} className="text-emerald-500 fill-emerald-500" />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-emerald-500">Live Archival Drop</span>
+                </div>
+                <h1 className="text-8xl md:text-[12rem] font-black uppercase tracking-tighter leading-[0.8] text-white drop-shadow-2xl">
+                  {posters[activePoster].title}
+                </h1>
+              </motion.div>
+
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="text-lg md:text-xl font-bold text-white/80 max-w-xl uppercase tracking-widest border-l-4 border-emerald-500 pl-6 py-2"
+              >
                 {posters[activePoster].subtitle}
-              </p>
-              <div className="pt-10 flex gap-6">
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="pt-10 flex gap-6"
+              >
                 <a
                   href={posters[activePoster].link_url || '#'}
-                  className="bg-white text-black px-12 py-6 text-[12px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all duration-500 flex items-center gap-4 group/btn shadow-xl"
+                  className="bg-emerald-500 text-black px-14 py-6 text-[11px] font-black uppercase tracking-[0.3em] hover:bg-white transition-all duration-500 flex items-center gap-4 group/btn shadow-[0_20px_40px_-10px_rgba(16,185,129,0.3)]"
                 >
-                  {t('home.btn_init')} <Zap size={16} className="fill-current group-hover/btn:scale-125 transition-transform" />
+                  {t('home.btn_init')} <ArrowRight size={16} className="group-hover/btn:translate-x-2 transition-transform" />
                 </a>
-              </div>
+              </motion.div>
             </div>
           </div>
 
-          {posters.length > 1 && (
-            <div className="absolute bottom-12 right-12 flex gap-4">
+          <div className="absolute bottom-12 left-12 md:left-32 flex flex-col gap-2">
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Sequence Control</span>
+            <div className="flex gap-4">
               {posters.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActivePoster(idx)}
-                  className={`w-12 h-1 transition-all duration-500 ${activePoster === idx ? 'bg-white w-24' : 'bg-white/20 hover:bg-white/50'}`}
+                  className={cn(
+                    "h-1 transition-all duration-700 rounded-full",
+                    activePoster === idx ? "bg-emerald-500 w-24" : "bg-white/20 w-8 hover:bg-white/40"
+                  )}
                 />
               ))}
             </div>
-          )}
+          </div>
         </section>
       )}
 
-      <div className="max-w-[1800px] mx-auto px-6 md:px-12 py-24">
-        {/* Filter & Sort Header */}
-        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-16 border-b border-black pb-8 gap-12">
-          <div>
-            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter leading-tight mb-4 text-black">{t('home.archive_title')}</h1>
-            <p className="text-[11px] uppercase tracking-widest text-black/40 mt-4 font-bold">
-              {loading ? (isAdmin ? t('home.inventory_scanning') : '...') : (isAdmin ? `${t('home.inventory_active')} / ${filteredProducts.length} Units Detected` : `${filteredProducts.length} ${t('home.items_available') || 'Items'}`)}
-            </p>
+      <div className="max-w-[1800px] mx-auto px-6 md:px-12 py-32">
+        {/* Filter & Sort Header - Professional Layout */}
+        <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end mb-24 gap-16">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="h-[2px] w-12 bg-emerald-500"></div>
+              <span className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400">Current Catalogue</span>
+            </div>
+            <h1 className="text-6xl md:text-9xl font-black uppercase tracking-tighter leading-none text-black">
+              {t('home.archive_title').split(' ')[0]} <br />
+              <span className="text-zinc-200 group-hover:text-black transition-colors duration-1000">{t('home.archive_title').split(' ')[1] || 'ARCHIVE'}</span>
+            </h1>
           </div>
 
-          <div className="flex flex-col gap-8 w-full max-w-3xl">
-            {/* Search Bar */}
+          <div className="flex flex-col gap-10 w-full max-w-4xl">
+            {/* Search Bar - Modern Minimal */}
             <div className="relative group w-full">
-              <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 opacity-20 group-focus-within:opacity-100 transition-all duration-500" />
+              <Search className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 text-zinc-300 group-focus-within:text-emerald-500 transition-colors" />
               <input
                 type="text"
                 placeholder={t('home.probe_placeholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-transparent border-b-2 border-black/10 py-6 pl-10 text-xl font-black uppercase tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-black/10 text-black"
+                className="w-full bg-transparent border-b-4 border-zinc-100 py-8 pl-14 text-2xl font-black uppercase tracking-tighter focus:outline-none focus:border-black transition-all placeholder:text-zinc-100 text-black"
               />
-              {searchQuery && (
-                <button onClick={() => setSearchQuery('')} className="absolute right-0 top-1/2 -translate-y-1/2 p-2"><X size={16} /></button>
-              )}
+              <AnimatePresence>
+                {searchQuery && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 p-4 bg-zinc-50 rounded-full hover:bg-red-50 hover:text-red-500 transition-colors"
+                  >
+                    <X size={16} />
+                  </motion.button>
+                )}
+              </AnimatePresence>
             </div>
 
-            <div className="flex flex-col md:flex-row justify-between gap-8">
-              {/* Category Filter */}
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center self-center mr-4 text-black/40">
-                  <Filter size={12} strokeWidth={3} />
-                  <span className="text-[10px] font-bold uppercase ml-2 tracking-widest">Filter:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`px-4 py-2 text-[10px] font-bold uppercase tracking-widest transition-all border-2 ${selectedCategory === cat ? 'bg-black text-white border-black' : 'bg-transparent text-black/40 border-black/10 hover:border-black hover:text-black'}`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
+            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+              <div className="flex flex-wrap gap-2">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={cn(
+                      "px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all rounded-full border-2",
+                      selectedCategory === cat
+                        ? "bg-black text-white border-black"
+                        : "bg-transparent text-zinc-400 border-zinc-100 hover:border-black hover:text-black"
+                    )}
+                  >
+                    {cat}
+                  </button>
+                ))}
               </div>
 
-              {/* Sorting */}
-              <div className="flex items-center gap-6 self-end md:self-center border-l border-black/10 pl-8">
-                <span className="text-[9px] font-black uppercase tracking-widest opacity-30">{t('home.sort_label')}:</span>
-                <div className="flex gap-4">
-                  {[
-                    { id: 'newest', label: t('home.sort_newest') },
-                    { id: 'priceLow', label: t('home.sort_price_low') },
-                    { id: 'priceHigh', label: t('home.sort_price_high') }
-                  ].map((opt) => (
+              <div className="flex items-center gap-8 bg-zinc-50 px-8 py-4 rounded-full border border-zinc-100">
+                <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-300">Organize By</span>
+                <div className="flex gap-6">
+                  {['newest', 'priceLow', 'priceHigh'].map((opt) => (
                     <button
-                      key={opt.id}
-                      onClick={() => setSortBy(opt.id as any)}
-                      className={`text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${sortBy === opt.id ? 'text-black border-b-2 border-black' : 'text-black/40 hover:text-black'}`}
+                      key={opt}
+                      onClick={() => setSortBy(opt as any)}
+                      className={cn(
+                        "text-[10px] font-black uppercase tracking-widest transition-all",
+                        sortBy === opt ? "text-emerald-600" : "text-black/40 hover:text-black"
+                      )}
                     >
-                      {opt.label}
+                      {opt === 'newest' ? 'Drop Date' : opt === 'priceLow' ? 'Price +' : 'Price -'}
                     </button>
                   ))}
                 </div>
@@ -202,95 +233,95 @@ export default function Home() {
 
         {/* Product Grid */}
         {loading ? (
-          <div className="h-96 flex flex-col items-center justify-center gap-4">
-            <div className="w-12 h-[2px] bg-black animate-pulse"></div>
-            <p className="text-[9px] uppercase tracking-[0.5em] font-black">{t('home.syncing')}</p>
+          <div className="h-96 flex flex-col items-center justify-center gap-6">
+            <div className="w-16 h-16 border-4 border-zinc-100 border-t-emerald-500 rounded-full animate-spin"></div>
+            <p className="text-[10px] uppercase tracking-[0.5em] font-black text-zinc-400">{t('home.syncing')}</p>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="h-96 flex flex-col items-center justify-center gap-8 border-2 border-dashed border-black/5">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/40">No products detected in this archival node.</p>
+          <div className="h-96 flex flex-col items-center justify-center gap-8 bg-zinc-50 rounded-[40px] border-2 border-dashed border-zinc-200">
+            <div className="w-16 h-16 bg-zinc-200 rounded-full flex items-center justify-center text-zinc-400"><X size={32} /></div>
+            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-400">Archive matches not found in current sector.</p>
             <button
               onClick={() => fetchData()}
-              className="bg-black text-white px-8 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all"
+              className="bg-black text-white px-12 py-5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-xl"
             >
-              Retry Data Request / Force Sync
+              Forced Node Synchronization
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-10 gap-y-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-12 gap-y-24">
             {filteredProducts.map((item, index) => (
-              <Link
-                href={`/product/${item.id}`}
+              <motion.div
                 key={item.id}
-                style={{ animationDelay: `${index * 0.1}s` }}
-                className="group cursor-crosshair block opacity-0 animate-fadeInUp"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <div className="relative aspect-[3/4] bg-[#f4f4f4] mb-6 overflow-hidden">
-                  {isAdmin && (
-                    <div className="absolute top-0 right-0 bg-black text-white text-[9px] font-black px-3 py-1.5 z-10 tracking-widest uppercase">
-                      NO. {item.id.toString().padStart(4, '0')}
-                    </div>
-                  )}
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out" />
+                <Link href={`/product/${item.id}`} className="group block space-y-8">
+                  <div className="relative aspect-[4/5] bg-zinc-50 rounded-[2rem] overflow-hidden group-hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] transition-all duration-700">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out p-8" />
 
-                  {/* Hover Overlay */}
-                  <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <span className="text-white text-[10px] bg-black px-6 py-3 font-black uppercase tracking-[0.3em]">
-                      {t('home.inspect')}
-                    </span>
+                    {/* High-end Badges */}
+                    <div className="absolute top-6 left-6 flex flex-col gap-2">
+                      {item.category && (
+                        <span className="bg-white/80 backdrop-blur-md px-3 py-1 text-[8px] font-black uppercase tracking-widest rounded-full opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+                          {item.category}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="absolute top-6 right-6">
+                      <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleWishlist({ id: item.id, name: item.name, price: item.price, image: item.image }); }}
+                        className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500",
+                          isInWishlist(item.id)
+                            ? "bg-emerald-500 text-white shadow-lg"
+                            : "bg-white/50 backdrop-blur-md text-black hover:bg-white opacity-0 group-hover:opacity-100"
+                        )}
+                      >
+                        <Heart size={16} className={isInWishlist(item.id) ? 'fill-white' : ''} />
+                      </button>
+                    </div>
+
+                    {/* Quick Add Overlay */}
+                    <div className="absolute inset-x-6 bottom-6 translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                      <div className="bg-black text-white p-6 rounded-2xl flex justify-between items-center shadow-2xl">
+                        <span className="text-[10px] font-black uppercase tracking-widest">View Specs</span>
+                        <ArrowUpRight size={16} className="text-emerald-500" />
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Wishlist Icon */}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      toggleWishlist({ id: item.id, name: item.name, price: item.price, image: item.image });
-                    }}
-                    className={`absolute bottom-4 right-4 z-20 p-2 rounded-full backdrop-blur-md transition-all duration-300 ${isInWishlist(item.id) ? 'bg-black text-white' : 'bg-white/80 text-black hover:bg-black hover:text-white opacity-0 group-hover:opacity-100'}`}
-                  >
-                    <Heart size={14} className={isInWishlist(item.id) ? 'fill-white' : ''} />
-                  </button>
-                </div>
+                  <div className="px-2 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl font-black uppercase tracking-tighter leading-none group-hover:text-emerald-600 transition-colors">
+                        {item.name}
+                      </h3>
+                      <span className="text-lg font-black tracking-tighter tabular-nums">{item.price}</span>
+                    </div>
 
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-sm font-black uppercase tracking-tight mb-1 group-hover:text-blue-600 transition-colors text-black">
-                      {item.name}
-                    </h3>
-                    <p className="text-[11px] font-bold text-black/40 mb-3">
-                      {currency} {(parseFloat(item.price.toString().replace(/[^0-9.]/g, '')) * (currency === 'USD' ? exchangeRate : 1)).toFixed(2)}
-                    </p>
-                    <div className="flex gap-1 mt-3">
-                      {item.has_sizes && item.sizes && item.sizes.length > 0 ? (
-                        item.sizes.map(sz => {
-                          const stock = item.stock_levels?.[sz] ?? 0;
-                          return (
-                            <div key={sz} className="flex flex-col items-center gap-1 group/sz">
-                              <div className={`w-7 h-7 flex items-center justify-center border-2 border-black/10 text-[10px] font-black uppercase ${stock > 0 ? 'text-black group-hover:bg-black group-hover:text-white' : 'text-red-500 line-through opacity-30'} transition-colors relative`}>
+                    <div className="flex items-center gap-2">
+                      {item.has_sizes && item.sizes && item.sizes.length > 0 && (
+                        <div className="flex gap-2">
+                          {item.sizes.slice(0, 4).map(sz => {
+                            const stock = item.stock_levels?.[sz] ?? 0;
+                            return (
+                              <div key={sz} className={cn(
+                                "w-8 h-8 rounded-lg border flex items-center justify-center text-[9px] font-black transition-all",
+                                stock > 0 ? "border-zinc-100 bg-zinc-50 text-black group-hover:border-black" : "border-zinc-50 bg-zinc-50 text-zinc-300 line-through"
+                              )}>
                                 {sz}
                               </div>
-                              <span className={`text-[8px] font-black uppercase tracking-tighter ${stock > 0 ? (stock < 3 ? 'text-red-500 animate-pulse' : 'text-emerald-600') : 'text-red-500 opacity-100'}`}>
-                                {stock > 0 ? `${stock}R` : 'OUT'}
-                              </span>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <div className="w-5 h-5 border border-black/20 relative">
-                          <svg className="absolute inset-0 w-full h-full text-black/10" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <line x1="0" y1="100" x2="100" y2="0" stroke="currentColor" strokeWidth="2" />
-                          </svg>
+                            );
+                          })}
+                          {item.sizes.length > 4 && <span className="text-[9px] font-black text-zinc-300 self-center">+{item.sizes.length - 4}</span>}
                         </div>
                       )}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-xs font-black">{item.price}</p>
-                    <div className="w-8 h-[1px] bg-black/20 ml-auto mt-2 group-hover:bg-black group-hover:w-full transition-all duration-500"></div>
-                  </div>
-                </div>
-              </Link>
+                </Link>
+              </motion.div>
             ))}
           </div>
         )}
